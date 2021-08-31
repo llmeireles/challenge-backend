@@ -1,15 +1,15 @@
 # compiled output
-/dist
-/node_modules
+/challenge-api/dist
+/challenge-api/node_modules
 
 # Logs
 logs
 *.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
+/challenge-api/npm-debug.log*
+/challenge-api/pnpm-debug.log*
+/challenge-api/yarn-debug.log*
+/challenge-api/yarn-error.log*
+/challenge-api/lerna-debug.log*
 
 # OS
 .DS_Store
