@@ -11,6 +11,7 @@ challenge-api
 - NestJS
 - TypeScrypt
 - TypeOrm
+- GraphQL
 
 ## Configurações
 Criar base de dados nomeada como challenge (Postgres)
@@ -32,6 +33,8 @@ $ npm run start
 $ npm run start:dev
 
 ```
+Playgroud Mutations GraphQL in browser:
+http://localhost:3000/graphql
 
 ## License
 
