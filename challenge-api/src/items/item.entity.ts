@@ -20,6 +20,9 @@ export class Item{
     @Column({type:'numeric'})
     price:number
 
+    @Column({nullable:true})
+    isStockout:boolean
+
     @ManyToOne(type=> Order, order => order.id)
     order:Order
 }

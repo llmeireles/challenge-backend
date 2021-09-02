@@ -2,6 +2,19 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Inventory {
+  id: String
+  product_id: String
+  sku: String!
+  create_at: DateTime
+  quantity: Float
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type Order {
   id: String!
   idClient: Float!
@@ -11,11 +24,6 @@ type Order {
   channel: String!
 }
 
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
 type OrderFilter {
   id: String
   external_id: String
@@ -23,6 +31,14 @@ type OrderFilter {
   created_at: DateTime
   is_picked: Boolean
   is_stockout: Boolean
+}
+
+input InventoryInput {
+  id: String
+  product_id: String
+  sku: String!
+  create_at: DateTime
+  quantity: Float
 }
 
 input Customer {
@@ -74,6 +90,7 @@ input OrderFilters {
 
 type Query {
   getAllOrders: [Order!]!
+  getInventoryEntries(sku: String!): [Inventory!]!
 }
 
 type Mutation {

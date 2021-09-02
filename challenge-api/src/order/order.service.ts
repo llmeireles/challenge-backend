@@ -16,7 +16,7 @@ export class OrderService{
        return this.orderRepository.find();
     }
 
-    async save_order_to_db(input: Order): Promise<Order>{
+    async saveOrderToDB(input: Order): Promise<Order>{
        try{
 
         return this.orderRepository.save(input) 
@@ -31,7 +31,7 @@ export class OrderService{
         let query = await this.orderRepository
         .createQueryBuilder('order')
         .leftJoinAndMapOne("order.store","order.store","store")
-        .where("order.date >=:date",{date:"2020-01-01"});
+        .where("order.date >=:date",{date:"2021-01-01"});
 
         if(input.id){
             query = query.andWhere("order.id = :id", {id:input.id})

@@ -2,6 +2,8 @@ import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { Customer } from "src/customer/customer.entity";
 import { CustomerService } from "src/customer/customer.service";
 import { CustomerDTO } from "src/customer/dto/customerDTO";
+import { InventoryBookedDTO } from "src/inventory/dto/inventoryBookedDTO";
+import { InventoryService } from "src/inventory/inventory.service";
 import { StoreService } from "src/store/store.service";
 import { OrderDTO } from "./dto/orderDTO";
 import { OrderDTOCreateInput } from "./dto/orderDTO.create.input";
@@ -15,7 +17,8 @@ export class OrderResolver{
     
      constructor(private readonly orderService : OrderService, 
                 private readonly customerService:CustomerService,
-                private readonly storeService:StoreService){
+                private readonly storeService:StoreService,
+                private readonly inventoryService:InventoryService){
 
     }
 
@@ -32,14 +35,15 @@ export class OrderResolver{
             const returnOrders: String[] = []
             const customerDto =  new CustomerDTO(this.customerService)
             const storeSelecionada = await this.storeService.getStore()
-            
-            for(const order of orderEntity){
-                
-                const customerSelecionado = await customerDto.getCustomerByDocument(order.customer.document)
-                order.store = storeSelecionada;
-            
-                try{
 
+            try{
+
+                for(const order of orderEntity){
+                    
+                    const customerSelecionado = await customerDto.getCustomerByDocument(order.customer.document)
+                    order.store = storeSelecionada;
+
+                
                     if(customerSelecionado === undefined ){
                         order.customer = await this.customerService.create(order.customer)
                     }
@@ -47,21 +51,93 @@ export class OrderResolver{
                         order.customer = customerSelecionado
                     }
                     
-                    
-                    const retorno = await this.orderService.save_order_to_db(order)
-                    returnOrders.push(retorno.idClient.toString())                   
-                    
+                    await this.getStockAvailable(order)
+                    if(order.isStockout){
+                        const retorno = await this.orderService.saveOrderToDB(order)
+                        await this.setBookedStock(order)
+                        returnOrders.push(retorno.idClient.toString())                
+                    }   
+                        
                 }
-                catch(ex){
-                    console.log(ex.message)
-                    return null
-                }
+               
+            }
+            catch(ex){
+                console.log(ex.message)
+                return null
             }
        
             return returnOrders
 
     }
 
+    async getStockAvailable(order:Order):Promise<Order>{
+
+        order.isStockout = true
+
+        for(const item of order.items){
+            item.isStockout = true
+
+            const stockAvailable = await this.inventoryService.getInventoryEntries(item.sku)
+            let totalQuantityAvailable :number = 0
+            stockAvailable.map((cValue) =>{
+                totalQuantityAvailable += cValue.quantity
+
+                return cValue
+            })
+            
+            if(totalQuantityAvailable <= item.quantity){
+                item.isStockout = false
+                order.isStockout = false
+            }
+        }
+
+        return order
+    }
+
+    async setBookedStock(order:Order){
+        try{
+
+            for(const item of order.items){
+                let quantityItemOrder = item.quantity
+                const stockAvailable = await this.inventoryService.getInventoryEntries(item.sku)
+
+                for(const stock of stockAvailable){
+
+                    console.log("stock",stock.id)
+                    if(quantityItemOrder === 0)
+                        break
+
+                    if(quantityItemOrder <= stock.quantity){
+                        const bookedStock =  new InventoryBookedDTO()
+                        bookedStock.inventory_id = stock.id
+                        bookedStock.order_id = order.id
+                        bookedStock.quantity = quantityItemOrder
+
+                        await this.inventoryService.bookStock(bookedStock);
+                        stock.quantity -= quantityItemOrder
+                        quantityItemOrder -= quantityItemOrder
+                        await this.inventoryService.inventoryUpdate(stock.id,stock.quantity)
+                    }
+                    else{
+
+                        const bookedStock =  new InventoryBookedDTO()
+                        bookedStock.inventory_id = stock.id
+                        bookedStock.order_id = order.id
+                        bookedStock.quantity = stock.quantity
+
+                        await this.inventoryService.bookStock(bookedStock);
+                        quantityItemOrder -= stock.quantity
+                        stock.quantity -= stock.quantity
+                        
+                        await this.inventoryService.inventoryUpdate(stock.id,stock.quantity)
+                    }
+
+                }
+            }
+        }catch(ex){
+            console.log(ex.message)
+        }
+    }
 
     @Mutation(returns=> [OrderDTOFilters], {name:'get_orders', nullable:true})
     async get_orders(
