@@ -2,22 +2,21 @@ import { Field, InputType, ObjectType } from "@nestjs/graphql";
 
 
 @InputType('Items')
-@ObjectType('Items')
 export class ItemsDTO{
 
-    @Field({name:'Id'})
-    IdClient:string
+    @Field()
+    Id:string
 
-    @Field({nullable:true, name:'Sku'})
-    sku: string
+    @Field({nullable:true})
+    Sku: string
 
-    @Field({nullable:true, name:'Name'})
-    name:string
+    @Field({nullable:true})
+    Name:string
 
-    @Field({nullable:true, name:'Quantity'})
-    quantity: number
+    @Field({nullable:true})
+    Quantity: string
 
-    @Field({nullable:true, name :'Price'})
-    price:number
+    @Field({nullable:true})
+    Price:string
 
 }

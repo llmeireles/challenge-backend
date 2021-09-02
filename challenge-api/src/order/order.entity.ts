@@ -16,7 +16,7 @@ export class Order{
     @Column()
     date: Date;
 
-    @Column()
+    @Column({type:'numeric'})
     totalValue: number;
 
     @Column()
@@ -25,13 +25,19 @@ export class Order{
     @Column()
     channel: string
 
+    @Column({nullable:true})
+    isPicked: boolean
+
+    @Column({nullable:true})
+    isStockout: boolean
+
     @ManyToOne(type=> Customer, customer=> customer.id)
     customer:Customer
 
-    @ManyToOne(type=> Store, store => store.id)
+    @ManyToOne(type=> Store, store => store.id, {nullable:true})
     store:Store
 
-    @OneToMany(type=> Item, item => item.id)
+    @OneToMany(type=> Item, item => item.order, {cascade:['insert']})
     items: Item[]
 
 }

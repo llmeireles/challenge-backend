@@ -1,38 +1,44 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql";
+import { Customer } from "../customer.entity";
 import { CustomerService } from "../customer.service";
 
 
 @InputType('Customer')
-@ObjectType('Customer')
+
 export class CustomerDTO{
 
     constructor(private readonly customerService: CustomerService){}
 
-    @Field({name:'Name'})
-    name: string
+    @Field()
+    Name: string
 
-    @Field({nullable:true, name:'Document'})
-    document:string
+    @Field()
+    Document:string
 
-    @Field({nullable:true, name:'Adress'})
-    address:string
+    @Field()
+    Address:string
     
-    @Field({nullable:true, name:'Number'})
-    number:string
+    @Field()
+    Number:string
 
-    @Field({nullable:true, name:'Complement'})
-    complement:string
+    @Field()
+    Complement:string
 
-    @Field({nullable:true, name:'Neighborhood'})
-    neighborhood:string
+    @Field()
+    Neighborhood:string
 
-    @Field({nullable:true, name:'City'})
-    city:string
+    @Field()
+    City:string
 
-    @Field({nullable:true, name:'State'})
-    state:string
+    @Field()
+    State:string
 
     public async getClientes() {
         return await this.customerService.findAll()    
+    }
+
+    public async getCustomerByDocument(document:string){
+        return await this.customerService.findByFilters(document)
+
     }
 }

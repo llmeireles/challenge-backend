@@ -1,7 +1,7 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql";
 
 
-@ObjectType('Delivery')
+
 @InputType('Delivery')
 export class DeliveryDTO{
 

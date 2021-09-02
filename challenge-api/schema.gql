@@ -16,44 +16,24 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type Query {
-  getAllOrders: [Order!]!
-}
-
-type Mutation {
-  createOrder(input: OrderDTOCreateInput!): Order!
-  getOrdersCli(input: OrderDTOCreateInput!): Order
-}
-
-input OrderDTOCreateInput {
-  Id: Float!
-  Date: DateTime!
-  TotalValue: Float!
-  Status: Float!
-  Channel: String!
-  Customer: [Customer!]!
-  Invoice: [Invoice!]!
-  Delivery: [Delivery!]!
-  Items: [Items!]!
+type OrderFilter {
+  id: String
+  external_id: String
+  store_id: String
+  created_at: DateTime
+  is_picked: Boolean
+  is_stockout: Boolean
 }
 
 input Customer {
   Name: String!
-  Document: String
-  Adress: String
-  Number: String
-  Complement: String
-  Neighborhood: String
-  City: String
-  State: String
-}
-
-input Invoice {
-  Number: Float!
-  Serie: String!
-  AccessKey: String!
-  IssueDate: DateTime!
-  Value: Float!
+  Document: String!
+  Address: String!
+  Number: String!
+  Complement: String!
+  Neighborhood: String!
+  City: String!
+  State: String!
 }
 
 input Delivery {
@@ -67,10 +47,48 @@ input Delivery {
   State: String!
 }
 
+input Invoice {
+  Number: String!
+  Serie: String!
+  AccessKey: String!
+  IssueDate: DateTime!
+  Value: String!
+}
+
 input Items {
   Id: String!
   Sku: String
   Name: String
-  Quantity: Float
-  Price: Float
+  Quantity: String
+  Price: String
+}
+
+input OrderFilters {
+  id: String
+  external_id: String
+  store_id: String
+  created_at: DateTime
+  is_picked: Boolean
+  is_stockout: Boolean
+}
+
+type Query {
+  getAllOrders: [Order!]!
+}
+
+type Mutation {
+  createOrder(input: [OrderDTOCreateInput!]!): [String!]
+  get_orders(filters: OrderFilters!): [OrderFilter!]
+}
+
+input OrderDTOCreateInput {
+  Id: Float!
+  Date: DateTime!
+  TotalValue: Float!
+  Status: Float!
+  Channel: String!
+  Customer: Customer!
+  Invoice: Invoice!
+  Delivery: [Delivery!]!
+  Items: [Items!]!
 }

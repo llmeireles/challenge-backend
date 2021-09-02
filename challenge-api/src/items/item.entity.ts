@@ -17,9 +17,9 @@ export class Item{
     @Column()
     quantity: number
 
-    @Column()
+    @Column({type:'numeric'})
     price:number
 
-    @ManyToOne(type=> Order)
+    @ManyToOne(type=> Order, order => order.id)
     order:Order
 }

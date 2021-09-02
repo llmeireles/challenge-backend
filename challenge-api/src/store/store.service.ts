@@ -10,4 +10,8 @@ export class StoreService{
         @InjectRepository(Store)
         private storeService: Repository<Store>
     ){}
+
+    async getStore():Promise<Store>{
+        return this.storeService.findOne()   
+    }
 }

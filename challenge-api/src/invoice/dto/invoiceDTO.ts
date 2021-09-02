@@ -1,13 +1,12 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql";
 
 
-@ObjectType('Invoice')
 @InputType('Invoice')
 export class InvoiceDTO {
 
 
     @Field({name:'Number'})
-    number: number
+    number: string
 
     @Field({name:'Serie'})
     serie:string
@@ -19,5 +18,5 @@ export class InvoiceDTO {
     issueDate:Date
     
     @Field({name:'Value'})
-    value:number
+    value:string
 }
