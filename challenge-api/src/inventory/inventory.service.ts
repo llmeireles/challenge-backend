@@ -51,5 +51,25 @@ export class InventoryService{
     async inventoryUpdate(idInventory:string, QuantityAvailable:number){
         await this.inventoryRepository.update({id:idInventory},{quantity:QuantityAvailable})
     }
+
+    async getQuantityAvailable(skuParameter:string):Promise<number>{
+
+        if(skuParameter){
+            let query = this.inventoryRepository
+            .createQueryBuilder('inventory')
+            .select("SUM(inventory.quantity)", "value")
+            .innerJoin("inventory.product", "product")
+            .where('product.sku= :sku', {sku:skuParameter})
+            .andWhere('inventory.quantity > :quantity',{quantity:0})
+            
+            let sum:{
+                value:string
+            } 
+            sum = await query.getRawOne()
+            return Number(sum.value)
+        }
+        return 0
+        
+    }
 }
 

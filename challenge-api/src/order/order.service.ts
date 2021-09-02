@@ -61,6 +61,31 @@ export class OrderService{
 
     
         return orders
-
      }
+
+     async getSalesAverageSku(skuParameter:string, daysParameter:number):Promise<number>{
+    
+       let dateParameter = new Date()
+       dateParameter = this.addDays(dateParameter,-daysParameter)
+
+       let query = this.orderRepository
+       .createQueryBuilder('order')
+       .select("SUM(item.quantity)","value")
+       .innerJoin('order.items','item')
+       .where("item.sku = :sku", {sku:skuParameter})
+       .andWhere("order.date >=  :days",{days:dateParameter})
+
+       let sum:{
+           value:string
+       } 
+       sum = await query.getRawOne()
+       
+       return Number(sum.value) / daysParameter
+     }
+
+    private addDays(date:Date, days:number):Date{
+        date.setDate(date.getDate() + days)
+
+        return date
+    }
 }

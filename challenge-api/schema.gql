@@ -33,6 +33,11 @@ type OrderFilter {
   is_stockout: Boolean
 }
 
+type orderSku {
+  sku: String!
+  deadLine: DateTime!
+}
+
 input InventoryInput {
   id: String
   product_id: String
@@ -96,6 +101,7 @@ type Query {
 type Mutation {
   createOrder(input: [OrderDTOCreateInput!]!): [String!]
   get_orders(filters: OrderFilters!): [OrderFilter!]
+  stockAnalysis(input: OrderDTOCreateInput!): [orderSku!]
 }
 
 input OrderDTOCreateInput {

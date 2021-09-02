@@ -8,6 +8,7 @@ import { StoreService } from "src/store/store.service";
 import { OrderDTO } from "./dto/orderDTO";
 import { OrderDTOCreateInput } from "./dto/orderDTO.create.input";
 import { OrderDTOFilters } from "./dto/orderDTO.filters";
+import { OrderDTOSku } from "./dto/orderDTO.sku";
 import { Order } from "./order.entity";
 import { OrderMapper } from "./order.mapper";
 import { OrderService } from "./order.service";
@@ -99,37 +100,36 @@ export class OrderResolver{
 
             for(const item of order.items){
                 let quantityItemOrder = item.quantity
-                const stockAvailable = await this.inventoryService.getInventoryEntries(item.sku)
+                const inventoryAvailable = await this.inventoryService.getInventoryEntries(item.sku)
 
-                for(const stock of stockAvailable){
+                for(const inventory of inventoryAvailable){
 
-                    console.log("stock",stock.id)
                     if(quantityItemOrder === 0)
                         break
 
-                    if(quantityItemOrder <= stock.quantity){
+                    if(quantityItemOrder <= inventory.quantity){
                         const bookedStock =  new InventoryBookedDTO()
-                        bookedStock.inventory_id = stock.id
+                        bookedStock.inventory_id = inventory.id
                         bookedStock.order_id = order.id
                         bookedStock.quantity = quantityItemOrder
 
                         await this.inventoryService.bookStock(bookedStock);
-                        stock.quantity -= quantityItemOrder
+                        inventory.quantity -= quantityItemOrder
                         quantityItemOrder -= quantityItemOrder
-                        await this.inventoryService.inventoryUpdate(stock.id,stock.quantity)
+                        await this.inventoryService.inventoryUpdate(inventory.id,inventory.quantity)
                     }
                     else{
 
                         const bookedStock =  new InventoryBookedDTO()
-                        bookedStock.inventory_id = stock.id
+                        bookedStock.inventory_id = inventory.id
                         bookedStock.order_id = order.id
-                        bookedStock.quantity = stock.quantity
+                        bookedStock.quantity = inventory.quantity
 
                         await this.inventoryService.bookStock(bookedStock);
-                        quantityItemOrder -= stock.quantity
-                        stock.quantity -= stock.quantity
-                        
-                        await this.inventoryService.inventoryUpdate(stock.id,stock.quantity)
+                        quantityItemOrder -= inventory.quantity
+                        inventory.quantity -= inventory.quantity
+
+                        await this.inventoryService.inventoryUpdate(inventory.id,inventory.quantity)
                     }
 
                 }
@@ -169,6 +169,44 @@ export class OrderResolver{
         return returnOdersFiltered;
         
         
+    }
+
+    @Mutation(returns =>[OrderDTOSku], { name: 'stockAnalysis', nullable:true})
+    async stockAnalysis(
+        @Args({name:'input', type:() => OrderDTOCreateInput})input:OrderDTOCreateInput): Promise<OrderDTOSku[]>{
+        
+        const daysAtAnalysis:number = 15;
+        const returnSkusOrder:OrderDTOSku[] = []
+
+        
+        for(const item of input.Items){
+            let dateDeadLine:Date = new Date()
+            let daysDeadLine : number = 0
+
+            const averageQuantitySales = (await this.orderService.getSalesAverageSku(item.Sku, daysAtAnalysis))
+            const quantityInStock= (await this.inventoryService.getQuantityAvailable(item.Sku))
+            daysDeadLine = quantityInStock
+
+            if(Math.round(averageQuantitySales) > 0)
+            {
+                daysDeadLine = Math.round(quantityInStock / averageQuantitySales)
+            }
+
+            const skuOrder = new OrderDTOSku()
+            skuOrder.sku = item.Sku
+            dateDeadLine = this.addDays(dateDeadLine, daysDeadLine)
+            skuOrder.deadLine = dateDeadLine
+            returnSkusOrder.push(skuOrder)
+
+        }
+        return returnSkusOrder
+    }
+
+    private addDays(date:Date, days:number):Date{
+        console.log(date, days)
+        date.setDate(date.getDate() + days)
+
+        return date
     }
 
 }
