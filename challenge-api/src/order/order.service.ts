@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { FindOptionsUtils, Repository } from "typeorm";
 import { OrderDTOFilters } from "./dto/orderDTO.filters";
 import { Order } from "./order.entity";
+import {Util} from './../util/util'
 
 
 @Injectable()
@@ -66,7 +67,7 @@ export class OrderService{
      async getSalesAverageSku(skuParameter:string, daysParameter:number):Promise<number>{
     
        let dateParameter = new Date()
-       dateParameter = this.addDays(dateParameter,-daysParameter)
+       dateParameter = Util.addDaysDate(dateParameter,-daysParameter)
 
        let query = this.orderRepository
        .createQueryBuilder('order')
@@ -82,10 +83,4 @@ export class OrderService{
        
        return Number(sum.value) / daysParameter
      }
-
-    private addDays(date:Date, days:number):Date{
-        date.setDate(date.getDate() + days)
-
-        return date
-    }
 }

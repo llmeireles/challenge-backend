@@ -1,5 +1,4 @@
 import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
-import { Customer } from "src/customer/customer.entity";
 import { CustomerService } from "src/customer/customer.service";
 import { CustomerDTO } from "src/customer/dto/customerDTO";
 import { InventoryBookedDTO } from "src/inventory/dto/inventoryBookedDTO";
@@ -12,6 +11,7 @@ import { OrderDTOSku } from "./dto/orderDTO.sku";
 import { Order } from "./order.entity";
 import { OrderMapper } from "./order.mapper";
 import { OrderService } from "./order.service";
+import { Util} from './../util/util'
 
 @Resolver(of => OrderDTO)
 export class OrderResolver{
@@ -157,7 +157,7 @@ export class OrderResolver{
             }
             orderReturnedFiltered.created_at = orderReturned.date
             orderReturnedFiltered.is_picked = orderReturned.isPicked
-            orderReturnedFiltered.is_stockout = orderReturnedFiltered.is_stockout
+            orderReturnedFiltered.is_stockout = orderReturned.isStockout
 
             returnOdersFiltered.push(orderReturnedFiltered)
             }
@@ -194,19 +194,12 @@ export class OrderResolver{
 
             const skuOrder = new OrderDTOSku()
             skuOrder.sku = item.Sku
-            dateDeadLine = this.addDays(dateDeadLine, daysDeadLine)
+            dateDeadLine = Util.addDaysDate(dateDeadLine, daysDeadLine)
             skuOrder.deadLine = dateDeadLine
             returnSkusOrder.push(skuOrder)
 
         }
         return returnSkusOrder
-    }
-
-    private addDays(date:Date, days:number):Date{
-        console.log(date, days)
-        date.setDate(date.getDate() + days)
-
-        return date
     }
 
 }
